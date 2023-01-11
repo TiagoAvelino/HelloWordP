@@ -78,7 +78,9 @@
 FROM registry.access.redhat.com/ubi8/openjdk-11:1.14
 
 ENV LANGUAGE='en_US:en'
-ls
+RUN ls
+RUN pwd 
+RUN dir -s  
 WORKDIR /build
 ADD . /build/
 ls
