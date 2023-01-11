@@ -89,9 +89,9 @@ RUN find
 
 RUN pwd 
 
-ADD . /build/
+ADD ./ /build/
 
-RUN find
+RUN find 
 
 # We make four distinct layers so if there are application changes the library layers can be re-used
 COPY --chown=185 target/quarkus-app/lib/ /deployments/lib/
