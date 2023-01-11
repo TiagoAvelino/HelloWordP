@@ -78,7 +78,7 @@
 FROM registry.access.redhat.com/ubi8/openjdk-11:1.14
 
 ENV LANGUAGE='en_US:en'
-RUN find
+RUN find .
 RUN pwd 
 
 WORKDIR /build
