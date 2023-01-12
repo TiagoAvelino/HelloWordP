@@ -89,7 +89,7 @@ RUN find
 
 RUN pwd 
 
-ADD ./ /build/
+ADD . /build/
 
 RUN find 
 
