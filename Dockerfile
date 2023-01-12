@@ -83,8 +83,9 @@ RUN pwd
 
 WORKDIR /build
 
+RUN pwd 
 
-RUN find
+RUN find source
 
 
 ADD . /build/
