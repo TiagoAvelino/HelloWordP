@@ -90,7 +90,7 @@ RUN find
 
 RUN pwd 
 
-ADD . /build/
+COPY . /build/
 
 RUN find 
 
