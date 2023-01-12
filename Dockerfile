@@ -78,8 +78,7 @@
 FROM registry.access.redhat.com/ubi8/openjdk-11:1.14
 
 ENV LANGUAGE='en_US:en'
-RUN cd .
-RUN find 
+RUN find
 RUN pwd 
 
 WORKDIR /build
@@ -88,11 +87,10 @@ RUN pwd
 
 RUN find
 
-RUN pwd 
 
-COPY . /build/
+ADD . /build/
 
-RUN find 
+RUN find
 
 # We make four distinct layers so if there are application changes the library layers can be re-used
 COPY --chown=185 target/quarkus-app/lib/ /deployments/lib/
