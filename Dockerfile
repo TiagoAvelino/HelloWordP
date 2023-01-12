@@ -85,9 +85,6 @@ WORKDIR /build
 
 RUN pwd 
 
-RUN find workspace/source
-
-
 ADD . /build/
 
 RUN find
