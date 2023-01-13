@@ -14,3 +14,13 @@ public class GreetingResource {
         return "Hello from RESTEasy Reactive";
     }
 }
+
+@Path("/")
+public class GreetingResource {
+
+    @GET
+    @Produces(MediaType.TEXT_PLAIN)
+    public String hello() {
+        return "Hello from Home Reactive";
+    }
+}
