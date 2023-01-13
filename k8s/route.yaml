@@ -6,8 +6,10 @@ metadata:
   name: my-java-quarkus
 spec:
   port:
-    targetPort: http-8081
+    targetPort: http
   to:
     kind: Service
     name: my-java-quarkus
     weight: 100
+
+

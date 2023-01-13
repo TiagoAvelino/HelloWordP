@@ -3,8 +3,9 @@ kind: Service
   metadata:
     name: my-java-quarkus
   spec:
+    type: NodePort
   ports:
-    - name: http-8081
+    - name: http
       port: 8081
       protocol: TCP
       targetPort: 8081
