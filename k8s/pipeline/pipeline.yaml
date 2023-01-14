@@ -1,0 +1,155 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: ci-pipeline
+  namespace: development
+spec:
+  params:
+    - default: https://github.com/TiagoAvelino/HelloWordProject.git
+      description: git url to clone
+      name: git-source-url
+      type: string
+    - default: development
+      name: dev-proj
+      type: string
+      description: name of the development project
+    - default: production
+      name: prod-proj
+      type: string
+      description: name of the production project
+    - default: develop
+      description: "git revision to checkout (branch, tag, sha, ref…)"
+      name: git-source-revision
+      type: string
+    - default: hello-quarkus
+      description: image name deve ser o valor do caminho final do image path
+      name: image-name
+      type: string
+    - default: image-registry.openshift-image-registry.svc:5000/development/hello-quarkus
+      description: image path
+      name: remote-image
+      type: string
+    - default: my-java-quarkus
+      name: deployment-name
+      type: string
+      description: name of the deployment to be patched
+    - default: promotion-prod
+      name: tag
+      type: string
+      description: name of the image tag to be promoted
+  tasks:
+    - name: git-clone
+      params:
+        - name: url
+          value: $(params.git-source-url)
+        - name: revision
+          value: $(params.git-source-revision)
+        - name: sslVerify
+          value: "false"
+        - name: noProxy
+          value: "true"
+      taskRef:
+        kind: ClusterTask
+        name: git-clone
+      workspaces:
+        - name: output
+          workspace: app-source
+    - name: run-test-cases
+      params:
+        - name: GOALS
+          value:
+            - clean
+            - test
+      runAfter:
+        - git-clone
+      taskRef:
+        kind: ClusterTask
+        name: maven
+      workspaces:
+        - name: source
+          workspace: app-source
+        - name: maven-settings
+          workspace: maven-settings
+    - name: build-artifact
+      params:
+        - name: GOALS
+          value:
+            - "-DskipTests"
+            - package
+            - "-Dquarkus.native.container-build=true"
+      runAfter:
+        - run-test-cases
+      taskRef:
+        kind: ClusterTask
+        name: maven
+      workspaces:
+        - name: source
+          workspace: app-source
+        - name: maven-settings
+          workspace: maven-settings
+    - name: build-push-image
+      params:
+        - name: IMAGE
+          value: $(params.remote-image)
+        - name: TLSVERIFY
+          value: "false"
+      runAfter:
+        - build-artifact
+      taskRef:
+        kind: ClusterTask
+        name: buildah
+      workspaces:
+        - name: source
+          workspace: app-source
+    - name: apply-manifests
+      taskRef:
+        name: apply-manifests
+      runAfter:
+        - build-push-image
+      workspaces:
+        - name: source
+          workspace: app-source
+    - name: update-deployment
+      taskRef:
+        name: update-deployment
+      params:
+        - name: deployment
+          value: $(params.deployment-name)
+        - name: IMAGE
+          value: $(params.remote-image)
+      runAfter:
+        - apply-manifests
+    - name: tag-image
+      params:
+        - name: SCRIPT
+          value: >-
+            oc tag $(params.dev-proj)/$(params.image-name):latest
+            $(params.dev-proj)/$(params.image-name):$(params.tag)
+      taskRef:
+        kind: ClusterTask
+        name: openshift-client
+    - name: update-qa-deployment-image
+      params:
+        - name: SCRIPT
+          value: >-
+            oc patch deployment $(params.deployment-name)
+            --patch='{"spec":{"template":{"spec":{ "containers":[{
+              "name": "$(params.deployment-name)",
+              "image":"$(params.remote-image):$(params.tag)" }] }}}}' -n $(params.prod-proj)
+      runAfter:
+        - tag-image
+      taskRef:
+        kind: ClusterTask
+        name: openshift-client
+    - name: deploy-in-qa
+      params:
+        - name: SCRIPT
+          value: >-
+            oc rollout latest dc/$(params.deployment-name) -n $(params.prod-proj)
+      resources:
+        inputs:
+          - name: source
+            resource: source-code
+  workspaces:
+    - name: app-source
+    - name: maven-settings
