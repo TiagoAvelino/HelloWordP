@@ -10,4 +10,4 @@ spec:
       protocol: TCP
       targetPort: 8080
   selector:
-    app: my-java-quarkus-app
+    app: my-java-quarkus
