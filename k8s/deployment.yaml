@@ -2,6 +2,8 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: my-java-quarkus
+  labels:
+    app: my-java-quarkus
 spec:
   replicas: 1
   selector:
@@ -14,7 +16,7 @@ spec:
     spec:
       containers:
         - name: my-java-quarkus
-          image: java-quarkus-image:latest
+          image: default-route-openshift-image-registry.apps-crc.testing/development/hello-quarkus
           ports:
             - name: http
               containerPort: 8080

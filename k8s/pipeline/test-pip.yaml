@@ -1,0 +1,49 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: ci-cd-pipeline
+  namespace: development
+secrets:
+  - name: basic-user-pass
+spec:
+  params:
+    - default: https://github.com/TiagoAvelino/HelloWordProject.git
+      description: git url to clone
+      name: git-source-url
+      type: string
+    - default: develop
+      description: "git revision to checkout (branch, tag, sha, ref…)"
+      name: git-source-revision
+      type: string
+    - default: image-registry.openshift-image-registry.svc:5000/development/hello-quarkus
+      description: image path
+      name: remote-image
+      type: string
+    - default: my-java-quarkus
+      name: deployment-name
+      type: string
+      description: name of the deployment to be patched
+  tasks:
+    - name: update-kustomize-repo
+      params:
+        - name: gitRepositoryUrl
+          value: $(params.git-source-url)
+        - name: gitRepositoryRevision
+          value: $(params.git-source-revision)
+        - name: gitPath
+          value: k8s
+        - name: imageTag
+          value: $(params.remote-image)
+        - name: verbose
+          value: 'true'
+        - name: fileName
+          value: $(params.deployment-name)
+      taskRef: 
+        kind: Task
+        name: update-kustomize-repo
+      workspaces:
+        - name: repository
+          workspace: kustomize-repo
+  workspaces:
+    - name: app-source
+    - name: maven-settings
