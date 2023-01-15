@@ -141,15 +141,6 @@ spec:
       taskRef:
         kind: ClusterTask
         name: openshift-client
-    - name: deploy-in-qa
-      params:
-        - name: SCRIPT
-          value: >-
-            oc rollout latest dc/$(params.deployment-name) -n $(params.prod-proj)
-      resources:
-        inputs:
-          - name: source
-            resource: source-code
   workspaces:
     - name: app-source
     - name: maven-settings
