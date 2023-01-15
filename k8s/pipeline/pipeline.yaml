@@ -1,7 +1,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
-  name: ci-pipeline
+  name: ci-cd-pipeline
   namespace: development
 spec:
   params:
@@ -109,7 +109,7 @@ spec:
       workspaces:
         - name: source
           workspace: app-source
-    - name: update-deployment
+    - name: update-deployment-dev
       taskRef:
         name: update-deployment
       params:
@@ -128,7 +128,9 @@ spec:
       taskRef:
         kind: ClusterTask
         name: openshift-client
-    - name: update-qa-deployment-image
+      runAfter:
+        - update-deployment-dev
+    - name: update-prod-deployment
       params:
         - name: SCRIPT
           value: >-
