@@ -1,0 +1,74 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: update-kustomize-repo
+  annotations:
+    tekton.dev/displayName: "Update Kustomize Git Repository"
+spec:
+  params:
+  - name: gitRepositoryUrl
+    description: URL of the Git repository to update
+    type: string
+  - name: gitRepositoryRevision
+    description: Branch or Tag to push the update to
+    type: string
+    default: production
+  - name: gitPath
+    description: Path in the repository to work in.
+    type: string
+    default: k8s/deployment.yaml
+  - name: imageTag
+    description: The image tag to be written into the YAML
+    type: string
+  - name: verbose
+    description: Log the commands used during execution
+    type: string
+    default: "true"
+
+  steps:
+  - name: git-checkout
+    image: alpine/git:v2.26.2
+    workingDir: $(workspaces.repository.path)
+    script: |
+      #!/usr/bin/env sh
+
+      if [[ "$(params.verbose)" == "true" ]] ; then
+        set -x
+        echo "**** Cloning $(params.gitRepositoryUrl) into $(pwd)"
+      fi
+
+      git clone "$(params.gitRepositoryUrl)" $(pwd)
+      git checkout "$(params.gitRepositoryRevision)"
+
+  - name: update-yaml
+    image: quay.io/dsanchor/ubi8-git:0.0.2
+    env:
+      - name: IMAGE_TAG
+        value: $(params.imageTag)
+    workingDir: $(workspaces.repository.path)
+    script: |
+      #!/usr/bin/env sh
+      set -e
+
+      if [[ "$(params.verbose)" == "true" ]] ; then
+        echo "**** Updating $(params.gitPath) image tag to $(params.imageTag)"
+      fi
+
+      sed -i 's|image:.*|image:\ $(params.imageTag)|' $(params.gitPath)
+
+  - name: commit-push-changes
+    image: alpine/git:v2.26.2
+    workingDir: $(workspaces.repository.path)
+    script: |
+      #!/usr/bin/env sh
+
+      git config --global user.email tiago.avelino1997@gmail.com
+      git config --global user.name TiagoAvelino
+
+      git add *
+      git commit --allow-empty -m "[OpenShift Pipeline] Updating $(params.gitPath) image tag to $(params.imageTag)"
+      git push origin "$(params.gitRepositoryRevision)" -v
+
+  workspaces:
+    - name: repository
+    
