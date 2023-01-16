@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: my-java-quarkus
-          image: image-registry.openshift-image-registry.svc:5000/development/hello-quarkus:1673882996
+          image: image-registry.openshift-image-registry.svc:5000/development/hello-quarkus:teste
           ports:
             - name: http
               containerPort: 8080
