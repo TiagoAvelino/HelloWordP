@@ -135,8 +135,6 @@ spec:
       params:
         - name: gitRepositoryUrl
           value: $(params.git-source-url)
-        - name: gitRepositoryRevision
-          value: production
         - name: imageTag
           value: >-
             $(params.remote-image):$(tasks.get-current-time.results.current-date-unix)
