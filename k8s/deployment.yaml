@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: my-java-quarkus
-          image:
+          image:${NEW_VALUE}
           ports:
             - name: http
               containerPort: 8080
