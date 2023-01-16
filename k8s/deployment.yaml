@@ -5,7 +5,7 @@ metadata:
   labels:
     app: my-java-quarkus
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app: my-java-quarkus
@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: my-java-quarkus
-          image: default-route-openshift-image-registry.apps-crc.testing/development/hello-quarkus
+          image: image-registry.openshift-image-registry.svc:5000/development/hello-quarkus:1673850553
           ports:
             - name: http
               containerPort: 8080
