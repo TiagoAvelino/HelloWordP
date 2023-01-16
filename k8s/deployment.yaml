@@ -5,7 +5,7 @@ metadata:
   labels:
     app: my-java-quarkus
 spec:
-  replicas: 2
+  replicas: 3
   selector:
     matchLabels:
       app: my-java-quarkus
